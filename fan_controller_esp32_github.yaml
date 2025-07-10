@@ -1,0 +1,32 @@
+esphome:
+  name: fan-controller
+
+esp32:
+  board: nodemcu-32s #Replace with another board if different
+wifi:
+  ssid: "your ssid goes here"
+  password: "AndSoDoesYourPassword"
+  ap:
+
+# Enable Home Assistant API
+api:
+
+# Enable OTA updates
+ota:
+  platform: esphome
+
+# Enable debug logger
+logger:
+
+switch:
+  - platform: gpio
+    name: "Fan 0" # Change here to switch the name that appears in Home Assistant
+    id: fan_0  
+    pin: GPIO21             # GPIO pin connected to
+    # inverted: true        # Uncomment this line IF the relay turns on when the GPIO is LOW (0V) and turns off when it is HIGH (3.3V). Try without it first.
+
+  - platform: gpio
+    name: "Ventola 1"    
+    id: fan_1 
+    pin: GPIO22             
+    # inverted: true  
