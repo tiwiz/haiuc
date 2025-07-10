@@ -1,5 +1,5 @@
 esphome:
-  name: fan-controller
+  name: haiuc
 
 esp32:
   board: nodemcu-32s #Replace with another board if different
