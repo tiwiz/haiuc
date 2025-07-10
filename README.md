@@ -111,7 +111,7 @@ Once the device is flashed and connected to your Wi-Fi, Home Assistant will auto
 ## 3D Printed Enclosure
 A custom-designed enclosure is available to house all the components for a clean and professional finish. The case is designed with appropriate cutouts for the USB-C power input and the two USB-A fan outputs, plus the hole thight enough for M3 threaded soldering inserts.
 
-You can download the related files from [Makerworld]() or from this [repository]().
+You can download the related files from [Makerworld](https://makerworld.com/en/models/1594744-home-assistant-integrated-dual-fan-controller-box#profileId-1679925) or from this [repository](./box/box_stl_v1.zip).
 
 ## License
 ```
