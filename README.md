@@ -58,7 +58,7 @@ The circuit is designed to be straightforward. The main USB-C port provides 5V p
 ## Software & Configuration
 This project uses ESPHome to create the firmware, making integration with Home Assistant incredibly simple.
 
-Below is the complete `yaml` configuration. Copy this code into your device's configuration file in ESPHome.
+Below is the complete `yaml` configuration. Copy this code into your device's configuration file in ESPHome or download it from the [release tab](https://github.com/tiwiz/haiuc/releases/latest).
 
 ```YAML
 esphome:
