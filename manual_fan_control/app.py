@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import time
+import socket
+from zeroconf import ServiceInfo, Zeroconf
 
 app = Flask(__name__)
 
@@ -36,4 +38,35 @@ def toggle_fan():
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
     os.makedirs('manual_fan_control/templates', exist_ok=True)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+
+    # Zeroconf (mDNS) setup
+    zeroconf_instance = None
+    service_info = None
+    server_port = 5000
+    try:
+        # Get host IP address dynamically
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80)) # Connect to a public server to get local IP
+        host_ip = s.getsockname()[0]
+        s.close()
+        
+        info = ServiceInfo(
+            "_http._tcp.local.",
+            "Fan Control Webserver._http._tcp.local.",
+            addresses=[socket.inet_aton(host_ip)],
+            port=server_port,
+            properties={'path': '/'},
+            server="fancontrol.local.",
+        )
+        print(f"Registering service: {info}")
+        zeroconf_instance = Zeroconf()
+        zeroconf_instance.register_service(info)
+        print("Zeroconf service registered.")
+        
+        app.run(host='0.0.0.0', port=server_port, debug=True, use_reloader=False) # use_reloader=False to prevent multiple zeroconf registrations
+    finally:
+        if zeroconf_instance and info:
+            print("Unregistering Zeroconf service...")
+            zeroconf_instance.unregister_service(info)
+            zeroconf_instance.close()
+            print("Zeroconf service unregistered and closed.")
