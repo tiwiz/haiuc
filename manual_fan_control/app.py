@@ -17,7 +17,9 @@ state_lock = threading.Lock()
 
 @app.route('/')
 def index():
-    return render_template('index.html', fan_state=fan_state)
+    with state_lock:
+        state = fan_state
+    return render_template('index.html', fan_state=state)
 
 @app.route('/toggle_fan', methods=['POST'])
 def toggle_fan():
@@ -43,7 +45,7 @@ if __name__ == '__main__':
 
     # Zeroconf (mDNS) setup
     zeroconf_instance = None
-    service_info = None
+    info = None
     server_port = 5000
     try:
         # Get host IP address dynamically with fallback
@@ -53,22 +55,27 @@ if __name__ == '__main__':
             host_ip = s.getsockname()[0]
             s.close()
         except Exception:
-            host_ip = socket.gethostbyname(socket.gethostname())
+            try:
+                host_ip = socket.gethostbyname(socket.gethostname())
+            except Exception:
+                print("ERROR: Could not determine local IP address. Zeroconf advertising disabled.")
+                host_ip = None
         
-        info = ServiceInfo(
-            "_http._tcp.local.",
-            "Fan Control Webserver._http._tcp.local.",
-            addresses=[socket.inet_aton(host_ip)],
-            port=server_port,
-            properties={'path': '/'},
-            server="fancontrol.local.",
-        )
-        print(f"Registering service: {info}")
-        zeroconf_instance = Zeroconf()
-        zeroconf_instance.register_service(info)
-        print("Zeroconf service registered.")
+        if host_ip:
+            info = ServiceInfo(
+                "_http._tcp.local.",
+                "Fan Control Webserver._http._tcp.local.",
+                addresses=[socket.inet_aton(host_ip)],
+                port=server_port,
+                properties={'path': '/'},
+                server="fancontrol.local.",
+            )
+            print(f"Registering service: {info}")
+            zeroconf_instance = Zeroconf()
+            zeroconf_instance.register_service(info)
+            print("Zeroconf service registered.")
         
-        app.run(host='0.0.0.0', port=server_port, debug=True, use_reloader=False) # use_reloader=False to prevent multiple zeroconf registrations
+        app.run(host='0.0.0.0', port=server_port, debug=False, use_reloader=False)
     finally:
         if zeroconf_instance and info:
             print("Unregistering Zeroconf service...")

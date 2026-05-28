@@ -149,8 +149,6 @@ The webserver automatically broadcasts its presence on the local network using Z
 
 This allows you to find the server's IP address and port without manual configuration.
 
-
-
 ## 3D Printed Enclosure
 A custom-designed enclosure is available to house all the components for a clean and professional finish. The case is designed with appropriate cutouts for the USB-C power input and the two USB-A fan outputs, plus the hole thight enough for M3 threaded soldering inserts.
 
