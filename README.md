@@ -108,6 +108,49 @@ Once the device is flashed and connected to your Wi-Fi, Home Assistant will auto
 2. You should see a new device discovered. Click Configure.
 3. The two switches ("Desk Fan" and "Rack Fan") will be added to Home Assistant and are ready for your automations!
 
+## Manual Control Webserver
+
+In situations where Home Assistant connectivity is unavailable, a local webserver provides manual control over the fans. This server advertises itself on the local network using Zeroconf (mDNS) for easy discovery.
+
+### Setup and Run
+
+1.  **Navigate to the `manual_fan_control` directory:**
+    ```bash
+    cd manual_fan_control
+    ```
+2.  **Install dependencies (if not already done):**
+    Ensure you have Python and `pip` installed. It's highly recommended to use a virtual environment:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install Flask zeroconf ifaddr
+    ```
+3.  **Run the webserver:**
+    ```bash
+    python app.py
+    ```
+    The server will start and typically run on `http://0.0.0.0:5000`. You will see output similar to:
+    ```
+     * Running on http://127.0.0.1:5000
+     * Running on http://YOUR_LOCAL_IP:5000
+    ```
+
+### Accessing the Web Interface
+
+Open your web browser and navigate to `http://YOUR_LOCAL_IP:5000` (replace `YOUR_LOCAL_IP` with the IP address shown when the server starts). You will see a simple interface with a button to toggle the fan state.
+
+### Discovering the Server (Zeroconf/mDNS)
+
+The webserver automatically broadcasts its presence on the local network using Zeroconf (also known as Bonjour or Apple's mDNS).
+
+*   **On macOS:** The service can often be found directly in Safari's "Bonjour" bookmarks or using a tool like "Bonjour Browser".
+*   **On Linux:** You can use command-line tools like `avahi-browse -a` to list all advertised services. Look for a service named "Fan Control Webserver".
+*   **On Windows:** You might need to install Bonjour Print Services or a third-party mDNS browser to discover the service.
+
+This allows you to find the server's IP address and port without manual configuration.
+
+
+
 ## 3D Printed Enclosure
 A custom-designed enclosure is available to house all the components for a clean and professional finish. The case is designed with appropriate cutouts for the USB-C power input and the two USB-A fan outputs, plus the hole thight enough for M3 threaded soldering inserts.
 
