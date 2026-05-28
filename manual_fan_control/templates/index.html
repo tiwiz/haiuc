@@ -58,26 +58,44 @@
     <script>
         const toggleButton = document.getElementById('toggleButton');
         const fanStateSpan = document.getElementById('fanState');
+        let isToggling = false;
 
         toggleButton.addEventListener('click', async () => {
-            const response = await fetch('/toggle_fan', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
+            if (isToggling) return;
+            isToggling = true;
+            const previousState = fanStateSpan.textContent;
+
+            // Optimistic UI update
+            const newState = previousState === 'off' ? 'on' : 'off';
+            fanStateSpan.textContent = newState;
+            toggleButton.textContent = newState === 'on' ? 'Turn Off' : 'Turn On';
+            toggleButton.classList.toggle('on');
+            toggleButton.classList.toggle('off');
+            toggleButton.disabled = true;
+
+            try {
+                const response = await fetch('/toggle_fan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                if (data.status !== 'success') {
+                    throw new Error('Server reported failure');
                 }
-            });
-            const data = await response.json();
-            if (data.status === 'success') {
-                fanStateSpan.textContent = data.new_state;
-                if (data.new_state === 'on') {
-                    toggleButton.classList.remove('on');
-                    toggleButton.classList.add('off');
-                    toggleButton.textContent = 'Turn Off';
-                } else {
-                    toggleButton.classList.remove('off');
-                    toggleButton.classList.add('on');
-                    toggleButton.textContent = 'Turn On';
-                }
+            } catch (error) {
+                console.error('Toggle failed:', error);
+                // Revert UI on failure
+                fanStateSpan.textContent = previousState;
+                toggleButton.textContent = previousState === 'off' ? 'Turn On' : 'Turn Off';
+                toggleButton.classList.toggle('on');
+                toggleButton.classList.toggle('off');
+                alert('Failed to toggle fan. Please try again.');
+            } finally {
+                toggleButton.disabled = false;
+                isToggling = false;
             }
         });
     </script>

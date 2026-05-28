@@ -1,20 +1,19 @@
 from flask import Flask, render_template, request, jsonify
 import os
-import time
 import socket
+import threading
 from zeroconf import ServiceInfo, Zeroconf
 
 app = Flask(__name__)
 
 # This is a placeholder for your relay control logic
 # In a real scenario, you would interact with GPIO pins (e.g., on a Raspberry Pi)
-# For example:
-# import RPi.GPIO as GPIO
-# GPIO.setmode(GPIO.BCM)
-# RELAY_PIN = 17 # Example GPIO pin
-# GPIO.setup(RELAY_PIN, GPIO.OUT)
+# For example, using gpiozero (recommended over deprecated RPi.GPIO):
+# from gpiozero import LED
+# relay = LED(17) # Example GPIO pin
 
 fan_state = "off" # Initial state
+state_lock = threading.Lock()
 
 @app.route('/')
 def index():
@@ -23,32 +22,38 @@ def index():
 @app.route('/toggle_fan', methods=['POST'])
 def toggle_fan():
     global fan_state
-    if fan_state == "off":
-        fan_state = "on"
-        # In a real scenario, activate the relay
-        # GPIO.output(RELAY_PIN, GPIO.HIGH)
-        print("Fan turned ON")
-    else:
-        fan_state = "off"
-        # In a real scenario, deactivate the relay
-        # GPIO.output(RELAY_PIN, GPIO.LOW)
-        print("Fan turned OFF")
+    with state_lock:
+        if fan_state == "off":
+            fan_state = "on"
+            # In a real scenario, activate the relay
+            # relay.on()
+            print("Fan turned ON")
+        else:
+            fan_state = "off"
+            # In a real scenario, deactivate the relay
+            # relay.off()
+            print("Fan turned OFF")
     return jsonify(status="success", new_state=fan_state)
 
 if __name__ == '__main__':
     # Create templates directory if it doesn't exist
-    os.makedirs('manual_fan_control/templates', exist_ok=True)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    templates_dir = os.path.join(script_dir, 'templates')
+    os.makedirs(templates_dir, exist_ok=True)
 
     # Zeroconf (mDNS) setup
     zeroconf_instance = None
     service_info = None
     server_port = 5000
     try:
-        # Get host IP address dynamically
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80)) # Connect to a public server to get local IP
-        host_ip = s.getsockname()[0]
-        s.close()
+        # Get host IP address dynamically with fallback
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            host_ip = s.getsockname()[0]
+            s.close()
+        except Exception:
+            host_ip = socket.gethostbyname(socket.gethostname())
         
         info = ServiceInfo(
             "_http._tcp.local.",
